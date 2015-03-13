@@ -72,7 +72,7 @@ module.exports = testCase({
     test.done();
   },
 
-  'check outbound CONNECT frame correctly follows protocol specification': function(test) {
+  'check outbound CONNECT frame correctly follows the minimum protocol specification': function(test) {
     var self = this;
     test.expect(4);
 
@@ -81,6 +81,31 @@ module.exports = testCase({
       test.deepEqual(stompFrame.headers, {
           login: 'user',
           passcode: 'pass'
+      });
+      test.equal(stompFrame.body, '');
+      test.equal(stompFrame.contentLength, -1);
+
+      test.done();
+    };
+
+    //start the test
+    this.stompClient.connect();
+    connectionObserver.emit('connect');
+
+  },
+
+  'check outbound CONNECT frame correctly follows protocol specification with 1.1 optional headers': function(test) {
+    this.stompClient = new StompClient('127.0.0.1', 2098, 'user', 'pass', '1.1', undefined, undefined, 'heart-beat:1000,1000');
+    var self = this;
+    test.expect(4);
+
+    sendHook = function(stompFrame) {
+      test.equal(stompFrame.command, 'CONNECT');
+      test.deepEqual(stompFrame.headers, {
+          login: 'user',
+          passcode: 'pass',
+          'accept-version': '1.1',
+          'heart-beat': 'heart-beat:1000,1000'
       });
       test.equal(stompFrame.body, '');
       test.equal(stompFrame.contentLength, -1);
