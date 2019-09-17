@@ -95,7 +95,7 @@ module.exports = testCase({
   },
 
   'check outbound CONNECT frame correctly follows protocol specification with 1.1 optional headers': function(test) {
-    this.stompClient = new StompClient('127.0.0.1', 2098, 'user', 'pass', '1.1', undefined, undefined, 'heart-beat:1000,1000');
+    this.stompClient = new StompClient('127.0.0.1', 2098, 'user', 'pass', '1.1', undefined, undefined, '1000,1000');
     var self = this;
     test.expect(4);
 
@@ -105,7 +105,7 @@ module.exports = testCase({
           login: 'user',
           passcode: 'pass',
           'accept-version': '1.1',
-          'heart-beat': 'heart-beat:1000,1000'
+          'heart-beat': '1000,1000'
       });
       test.equal(stompFrame.body, '');
       test.equal(stompFrame.contentLength, -1);
