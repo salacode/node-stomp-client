@@ -74,7 +74,7 @@ module.exports = testCase({
 
   'check StompClient construction from paremeters': function(test) {
     var stompClient = new StompClient(
-      'test.host.net',1234,'uname','pw', '1.1', 'q1.host.net', 
+      'test.host.net',1234,'uname','pw', '1.1', 'q1.host.net',
       { retries: 10, delay: 1000 });
 
     test.equal(stompClient.user, 'uname');
@@ -94,9 +94,9 @@ module.exports = testCase({
       address: 'test.host.net',
       port: 1234,
       user: 'uname',
-      pass: 'pw', 
-      protocolVersion: '1.1', 
-      vhost: 'q1.host.net', 
+      pass: 'pw',
+      protocolVersion: '1.1',
+      vhost: 'q1.host.net',
       reconnectOpts: { retries: 10, delay: 1000 }});
 
     test.equal(stompClient.user, 'uname');
@@ -121,35 +121,35 @@ module.exports = testCase({
       'test.host.net',1234,'uname','pw', null, null, null, false);
     test.ok(!stompClient.tls, 'TLS incorrectly set by parameter');
 
-    var stompClient = new StompClient({ 
-      host: 'secure.host.net',  
+    var stompClient = new StompClient({
+      host: 'secure.host.net',
       tls: true,
       cert: 'dummy'
       });
     test.equal(stompClient.address, 'secure.host.net');
     test.deepEqual(stompClient.tls.cert, 'dummy', 'TLS not set by option');
 
-    var stompClient = new StompClient({ 
-      host: 'secure.host.net',  
+    var stompClient = new StompClient({
+      host: 'secure.host.net',
       tls: false,
       cert: 'dummy'
       });
     test.equal(stompClient.address, 'secure.host.net');
     test.ok(!stompClient.tls, 'TLS incorrectly set by option');
 
-    var stompClient = new StompClient({ 
-      host: 'secure.host.net',  
+    var stompClient = new StompClient({
+      host: 'secure.host.net',
       tls: {
         cert: 'dummy'
       }});
     test.equal(stompClient.address, 'secure.host.net');
-    test.deepEqual(stompClient.tls.cert, 'dummy', 
+    test.deepEqual(stompClient.tls.cert, 'dummy',
       'TLS not set by nested option');
 
     test.done();
   },
 
-  'check outbound CONNECT frame correctly follows protocol specification': function(test) {
+  'check outbound CONNECT frame correctly follows the minimum protocol specification': function(test) {
     var self = this;
     test.expect(4);
 
@@ -158,6 +158,31 @@ module.exports = testCase({
       test.deepEqual(stompFrame.headers, {
           login: 'user',
           passcode: 'pass'
+      });
+      test.equal(stompFrame.body, '');
+      test.equal(stompFrame.contentLength, -1);
+
+      test.done();
+    };
+
+    //start the test
+    this.stompClient.connect();
+    connectionObserver.emit('connect');
+
+  },
+
+  'check outbound CONNECT frame correctly follows protocol specification with 1.1 optional headers': function(test) {
+    this.stompClient = new StompClient('127.0.0.1', 2098, 'user', 'pass', '1.1', undefined, undefined, undefined, 'heart-beat:1000,1000');
+    var self = this;
+    test.expect(4);
+
+    sendHook = function(stompFrame) {
+      test.equal(stompFrame.command, 'CONNECT');
+      test.deepEqual(stompFrame.headers, {
+          login: 'user',
+          passcode: 'pass',
+          'accept-version': '1.1',
+          'heart-beat': 'heart-beat:1000,1000'
       });
       test.equal(stompFrame.body, '');
       test.equal(stompFrame.contentLength, -1);
